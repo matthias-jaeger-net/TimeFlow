@@ -1,2 +1,2 @@
 # TimeFlow
-Experimental webpage. Researching time zones
+Experimental webpage.
