@@ -6,6 +6,11 @@
 
 (function TimeFlow() {
 
+	let width = window.innerWidth;
+	let height = window.innerHeight;
+
+
+
 	// Maps an input to a range
 	const map = (input, minInput, maxInput, minOutput, maxOutput) => {
 		return (input - minInput) * (maxOutput - minOutput) / (maxInput - minInput) + minOutput;
@@ -26,13 +31,15 @@
 
 	// Returns a <line> string
 	const HandString = (position, angle, radius) => {
+		// Center
 		let x1 = position.x;
 		let y1 = position.y;
 		// Polar to carthesian
 		let x2 = x1 + Math.cos(angle - Math.PI / 2) * radius;
 		let y2 = y1 + Math.sin(angle - Math.PI / 2) * radius;
-		let style = 'stroke:black; stroke-width:4; '
-		return '<line stroke-linecap="round" x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" style="' + style + '" />';
+
+		let hand = '<line stroke-linecap="round" x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" style="stroke:black; stroke-width:4;" />';
+		return hand;
 	}
 
 	// Retunrs a finished clock string
@@ -65,9 +72,7 @@
 		let now = getCurrentTime();
 
 		// Defining a grid based on the resolution
-		let width = window.innerWidth;
-		let height = window.innerHeight;
-		let scale = width / 20;
+		let scale = width / 8;
 		let rows = width / scale; // map(now.seconds, 0, 59, 1, 60);
 		let cols = height / scale; // map(now.minutes, 0, 59, 1, 60);
 		let grid = createGrid(rows, cols, scale);
@@ -81,8 +86,8 @@
 		svg += '</svg>';
 
 		// Open document stream and write the <svg>
-		document.open();
-		document.write(svg);
+		let wrapper = document.getElementById('svgWrapper');
+		wrapper.innerHTML = svg;
 	};
 
 	setInterval(writeInDocument, 1000);
