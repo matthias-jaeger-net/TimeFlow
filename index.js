@@ -24,18 +24,11 @@
 		}
 	};
 
-	// Returns a <circle> string
-	const CircleString = (position, radius) => {
-		let circle = '';
-		circle += '<circle cx="' + position.x + '" cy="' + position.y + '" r="' + radius + '"';
-		circle += ' stroke="black" stroke-width="2" fill="transparent"/>';
-		return circle;
-	};
-
 	// Returns a <line> string
 	const HandString = (position, angle, radius) => {
 		let x1 = position.x;
 		let y1 = position.y;
+		// Polar to carthesian
 		let x2 = x1 + Math.cos(angle - Math.PI / 2) * radius;
 		let y2 = y1 + Math.sin(angle - Math.PI / 2) * radius;
 		let style = 'stroke:black; stroke-width:4; '
@@ -45,7 +38,7 @@
 	// Retunrs a finished clock string
 	const createClockString = (position, time, radius) => {
 		let unit = (radius / 100.0);
-		let clock = CircleString(position, radius);
+		let clock = '';
 		clock += HandString(position, map(time.hours, 0, 23, 0, Math.PI * 4), unit * 60);
 		clock += HandString(position, map(time.minutes, 0, 59, 0, Math.PI * 2), unit * 70);
 		clock += HandString(position, map(time.seconds, 0, 59, 0, Math.PI * 2), unit * 80);
