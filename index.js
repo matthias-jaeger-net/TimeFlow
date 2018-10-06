@@ -1,25 +1,21 @@
 /* *
  *  TimeFlow
- *
- *  This program creates an abstract graphic, based on the given Time.
- *  Simply copy and paste the graphic, because it's rendered as a
- *  fully scalable vector graphic. Also feel free to modify and change
- *  this code to fit your project.
- *
- *  Github: https://github.com/matthias-jaeger-net/TimeFlow
- *
  *  Matthias Jäger, Graz 2018
+ *  Github: https://github.com/matthias-jaeger-net/TimeFlow
  */
 
 (function TimeFlow() {
 
+	// Global shorthands
 	const width = window.innerWidth;
 	const height = window.innerHeight;
 
-	const map = (num, in_min, in_max, out_min, out_max) => {
-		return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+	// Maps an input to a range
+	const map = (input, minInput, maxInput, minOutput, maxOutput) => {
+		return (input - minInput) * (maxOutput - minOutput) / (maxInput - minInput) + minOutput;
 	};
 
+	// Returns an object with the current time
 	const getCurrentTime = () => {
 		let date = new Date();
 		let hours = date.getHours();
@@ -32,6 +28,7 @@
 		}
 	};
 
+	// Returns a <circle> string
 	const CircleString = (position, radius) => {
 		let circle = '';
 		circle += '<circle cx="' + position.x + '" cy="' + position.y + '" r="' + radius + '"';
@@ -39,6 +36,7 @@
 		return circle;
 	};
 
+	// Returns a <line> string
 	const HandString = (position, angle, radius) => {
 		let x1 = position.x;
 		let y1 = position.y;
@@ -48,6 +46,7 @@
 		return '<line stroke-linecap="round" x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" style="' + style + '" />';
 	}
 
+	// Retunrs a finished clock string
 	const createClockString = (position, time, radius) => {
 		let unit = radius / 100.0;
 		let clock = CircleString(position, radius);
@@ -57,34 +56,37 @@
 		return clock;
 	};
 
-	const createClockGrid = () => {
-		console.log('yh');
+	// Returns an array with positions of a squared grid
+	const createGrid = (rows, cols, unit) => {
+		let positions = [];
+		for (let i = 0; i < rows; i++) {
+			for (let j = 0; j < cols; j++) {
+				let position = {
+					x: i * unit + (unit / 2.0),
+					y: j * unit + (unit / 2.0)
+				}
+				positions.push(position);
+			}
+		}
+		return positions;
 	}
 
-	const writeClockString = () => {
-		let position = {
-			x: width / 2,
-			y: height / 2
-		}
-		let clock1 = createClockString(position, getCurrentTime(), 100);
+	const writeInDocument = () => {
+		let scale = 150.0;
+		let rows = width / scale;
+		let cols = height / scale;
+		let grid = createGrid(rows, cols, scale);
 
-		let position2 = {
-			x: width / 3,
-			y: height / 5
+		let svg = '<svg width="' + width + '" height="' + height + '" version="1.1" xmlns="http://www.w3.org/2000/svg">';
+		for (let position of grid) {
+			svg += createClockString(position, getCurrentTime(), (scale / 2));
 		}
-		let clock2 = createClockString(position2, getCurrentTime(), 200);
-
-		let grafic = '<svg width="' + width + '" height="' + height + '" version="1.1" xmlns="http://www.w3.org/2000/svg">';
-		grafic += clock1 + " " + clock2;
-		grafic += '</svg>';
+		svg += '</svg>';
 
 		document.open();
-		document.write(grafic);
+		document.write(svg);
 	};
 
-
-
-
-	setInterval(writeClockString, 1000);
+	setInterval(writeInDocument, 1000);
 
 })();
