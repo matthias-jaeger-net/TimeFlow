@@ -6,10 +6,6 @@
 
 (function TimeFlow() {
 
-	// Global shorthands
-	const width = window.innerWidth;
-	const height = window.innerHeight;
-
 	// Maps an input to a range
 	const map = (input, minInput, maxInput, minOutput, maxOutput) => {
 		return (input - minInput) * (maxOutput - minOutput) / (maxInput - minInput) + minOutput;
@@ -32,7 +28,7 @@
 	const CircleString = (position, radius) => {
 		let circle = '';
 		circle += '<circle cx="' + position.x + '" cy="' + position.y + '" r="' + radius + '"';
-		circle += ' stroke="black" stroke-width="8" fill="transparent"/>';
+		circle += ' stroke="black" stroke-width="2" fill="transparent"/>';
 		return circle;
 	};
 
@@ -42,21 +38,21 @@
 		let y1 = position.y;
 		let x2 = x1 + Math.cos(angle - Math.PI / 2) * radius;
 		let y2 = y1 + Math.sin(angle - Math.PI / 2) * radius;
-		let style = 'stroke:black; stroke-width:8; '
+		let style = 'stroke:black; stroke-width:4; '
 		return '<line stroke-linecap="round" x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" style="' + style + '" />';
 	}
 
 	// Retunrs a finished clock string
 	const createClockString = (position, time, radius) => {
-		let unit = radius / 100.0;
+		let unit = (radius / 100.0);
 		let clock = CircleString(position, radius);
-		clock += HandString(position, map(time.hours, 0, 24, 0, Math.PI * 4), unit * 60);
+		clock += HandString(position, map(time.hours, 0, 23, 0, Math.PI * 4), unit * 60);
 		clock += HandString(position, map(time.minutes, 0, 59, 0, Math.PI * 2), unit * 70);
 		clock += HandString(position, map(time.seconds, 0, 59, 0, Math.PI * 2), unit * 80);
 		return clock;
 	};
 
-	// Returns an array with positions of a squared grid
+	// Returns an array with positions of a given grid
 	const createGrid = (rows, cols, unit) => {
 		let positions = [];
 		for (let i = 0; i < rows; i++) {
@@ -72,17 +68,26 @@
 	}
 
 	const writeInDocument = () => {
-		let scale = 150.0;
-		let rows = width / scale;
-		let cols = height / scale;
-		let grid = createGrid(rows, cols, scale);
 
+		let now = getCurrentTime();
+
+		// Defining a grid based on the resolution
+		let width = window.innerWidth;
+		let height = window.innerHeight;
+		let scale = width / 20;
+		let rows = width / scale; // map(now.seconds, 0, 59, 1, 60);
+		let cols = height / scale; // map(now.minutes, 0, 59, 1, 60);
+		let grid = createGrid(rows, cols, scale);
+		let padding = (scale / 100.0) * 10.0;
+
+		// Creating a full with <svg> string with clocks
 		let svg = '<svg width="' + width + '" height="' + height + '" version="1.1" xmlns="http://www.w3.org/2000/svg">';
 		for (let position of grid) {
-			svg += createClockString(position, getCurrentTime(), (scale / 2));
+			svg += createClockString(position, now, (scale / 2) - padding);
 		}
 		svg += '</svg>';
 
+		// Open document stream and write the <svg>
 		document.open();
 		document.write(svg);
 	};
