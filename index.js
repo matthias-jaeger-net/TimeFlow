@@ -1,74 +1,95 @@
+/* *
+ *  TimeFlow
+ *  Matthias Jäger, Graz 2018
+ *  Github: https://github.com/matthias-jaeger-net/TimeFlow
+ */
+
 (function TimeFlow() {
-  // Setup
-  const width = window.innerWidth;
-  const height = window.innerHeight;
 
-  const canvas = document.createElement('canvas');
-  document.body.appendChild(canvas);
-  canvas.width = width;
-  canvas.height = height;
+	let width = window.innerWidth;
+	let height = window.innerHeight;
 
-  const ctx = canvas.getContext('2d');
 
-  // Global helpers
-  const map = function(num, in_min, in_max, out_min, out_max) {
-    return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-  };
 
-  const draw = function() {
-    let now = new Date();
-    let hour = now.getHours();
-    let minute = now.getMinutes();
-    let second = now.getSeconds();
+	// Maps an input to a range
+	const map = (input, minInput, maxInput, minOutput, maxOutput) => {
+		return (input - minInput) * (maxOutput - minOutput) / (maxInput - minInput) + minOutput;
+	};
 
-    // Clear with white background
-    ctx.fillStyle = 'rgba(255, 255, 255, 1)';
-    ctx.fillRect(0, 0, width, height);
+	// Returns an object with the current time
+	const getCurrentTime = () => {
+		let date = new Date();
+		let hours = date.getHours();
+		let minutes = date.getMinutes();
+		let seconds = date.getSeconds();
+		return {
+			hours: hours,
+			minutes: minutes,
+			seconds: seconds
+		}
+	};
 
-    let cx = width * 0.5;
-    let cy = height * 0.5;
+	// Returns a <line> string
+	const HandString = (position, angle, radius) => {
+		// Center
+		let x1 = position.x;
+		let y1 = position.y;
+		// Polar to carthesian
+		let x2 = x1 + Math.cos(angle - Math.PI / 2) * radius;
+		let y2 = y1 + Math.sin(angle - Math.PI / 2) * radius;
 
-    ctx.lineCap = 'round';
+		let hand = '<line stroke-linecap="round" x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" style="stroke:black; stroke-width:4;" />';
+		return hand;
+	}
 
-    // Second pointer
-    let sangle = map(second, 0, 59, 360, 0);
-    let sx = Math.cos(sangle + Math.PI) * 200;
-    let sy = Math.sin(sangle + Math.PI) * 200;
+	// Retunrs a finished clock string
+	const createClockString = (position, time, radius) => {
+		let unit = (radius / 100.0);
+		let clock = '';
+		clock += HandString(position, map(time.hours, 0, 23, 0, Math.PI * 4), unit * 60);
+		clock += HandString(position, map(time.minutes, 0, 59, 0, Math.PI * 2), unit * 70);
+		clock += HandString(position, map(time.seconds, 0, 59, 0, Math.PI * 2), unit * 80);
+		return clock;
+	};
 
-    ctx.strokeStyle = 'red';
-    ctx.lineWidth = 5;
+	// Returns an array with positions of a given grid
+	const createGrid = (rows, cols, unit) => {
+		let positions = [];
+		for (let i = 0; i < rows; i++) {
+			for (let j = 0; j < cols; j++) {
+				let position = {
+					x: i * unit + (unit / 2.0),
+					y: j * unit + (unit / 2.0)
+				}
+				positions.push(position);
+			}
+		}
+		return positions;
+	}
 
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + sx, cy + sy);
-    ctx.stroke();
+	const writeInDocument = () => {
 
-    // Minute pointer
-    let mangle = map(minute, 0, 59, 360, 0);
-    mx = Math.cos(mangle) * 150;
-    my = Math.sin(mangle) * 150;
+		let now = getCurrentTime();
 
-    ctx.strokeStyle = 'blue';
-    ctx.lineWidth = 10;
+		// Defining a grid based on the resolution
+		let scale = width / 8;
+		let rows = width / scale; // map(now.seconds, 0, 59, 1, 60);
+		let cols = height / scale; // map(now.minutes, 0, 59, 1, 60);
+		let grid = createGrid(rows, cols, scale);
+		let padding = (scale / 100.0) * 10.0;
 
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + mx, cy + my);
-    ctx.stroke();
+		// Creating a full with <svg> string with clocks
+		let svg = '<svg width="' + width + '" height="' + height + '" version="1.1" xmlns="http://www.w3.org/2000/svg">';
+		for (let position of grid) {
+			svg += createClockString(position, now, (scale / 2) - padding);
+		}
+		svg += '</svg>';
 
-    // Hour pointer
-    let hangle = map(hour, 0, 59, 360, 0);
-    sx = Math.cos(hangle + Math.PI) * 100;
-    sy = Math.sin(hangle + Math.PI) * 100;
+		// Open document stream and write the <svg>
+		let wrapper = document.getElementById('svgWrapper');
+		wrapper.innerHTML = svg;
+	};
 
-    ctx.strokeStyle = 'green';
-    ctx.lineWidth = 15;
+	setInterval(writeInDocument, 1000);
 
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + sx, cy + sy);
-    ctx.stroke();
-
-  };
-  setInterval(draw, 1);
 })();
